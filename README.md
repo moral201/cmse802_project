@@ -1,9 +1,9 @@
 # cmse802_project
 
-# Physics-Based Human Body & Fluid Simulation  
+# Physics-Based Scene Simulation: Human-Like Body and Environmental Interactions  
 
 ## Project Overview  
-This project simulates a **human-like body** reacting to external forces and fluid interactions, such as rain. The goal is to apply **physics-based modeling techniques** to maintain body stability, simulate external forces, and implement realistic fluid interactions.  
+This project aims to create a physics-based dynamic scene where a human-like figure maintains balance while responding to external forces, such as environmental interactions with fluid dynamics like rain. By integrating rigid-body mechanics with Smoothed Particle Hydrodynamics (SPH), the simulation will model realistic movement, biomechanical constraints, and recovery from disturbances. The implementation will be conducted in Python using physics solvers and particle-based fluid simulations to enhance realism.
 
 ## Objectives  
 - Develop a **multi-joint** physics-based body capable of maintaining balance.  
