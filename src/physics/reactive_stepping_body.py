@@ -10,6 +10,18 @@ Date: March 2025
 """
 
 import numpy as np
+from body_constants import g, l_leg, l_torso, l_arm, head_radius, m, b, Kp, Kd, dt, total_time, num_steps, step_threshold
+
+def compute_torque(theta, omega, Kp, Kd):
+    """Compute PD controller torque with damping."""
+    return -Kp * theta - Kd * omega
+
+def update_stepping_dynamics(theta, omega, torque, m, l_leg, dt):
+    """Update stepping body angular dynamics."""
+    domega_dt = (torque - 0.2 * omega) / (m * l_leg**2)
+    omega_new = omega + domega_dt * dt
+    theta_new = theta + omega_new * dt
+    return theta_new, omega_new
 
 def simulate_reactive_stepping_body():
     """
@@ -23,7 +35,6 @@ def simulate_reactive_stepping_body():
         com_positions (list): X positions of center of mass over time
         step_events (list): Frame index when a step occurs
     """
-    from body_constants import g, l_leg, l_torso, l_arm, head_radius, m, b, Kp, Kd, dt, total_time, num_steps, step_threshold
 
     time = np.linspace(0, total_time, num_steps)
 
@@ -46,35 +57,24 @@ def simulate_reactive_stepping_body():
     foot_positions = []
 
     for i, t in enumerate(time):
-        # Apply PD-based torque control
-        torque = -Kp * theta - Kd * omega # Calculate PD control torque to stabilize body angle (theta) using proportional and derivative terms
-        domega_dt = (torque - 0.2 * omega) / (m * l_leg**2) # Compute angular acceleration (domega_dt) considering torque and damping (0.2*omega)
-        omega += domega_dt * dt
-        theta += omega * dt
+        torque = compute_torque(theta, omega, Kp, Kd)
+        theta, omega = update_stepping_dynamics(theta, omega, torque, m, l_leg, dt)
 
-        # Simple COM dynamics (can be expanded later)
-        #x_com += v_com * dt
-
-        # If external force occurs
+        # External push
         if 1.5 < t < 1.52:
-            v_com += 3.0  # external push to the right
+            v_com += 3.0
 
-        # Check stability and trigger step if needed
         foot_center = (left_foot_x + right_foot_x) / 2
         if abs(x_com - foot_center) > step_threshold and support_foot == "both":
             right_foot_x = x_com + 0.3
             support_foot = "left"
             step_events.append(i)
 
-        # Apply correction + damping only after stepping
         if support_foot == "left":
             correction_strength = 1
             v_com -= correction_strength * (x_com - foot_center)
             v_com *= 0.98
 
-
-        
-        # Simple COM dynamics (after correction)
         x_com += v_com * dt
 
         # Torso position

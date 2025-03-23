@@ -11,6 +11,18 @@ Date: March 2025
 """
 
 import numpy as np
+from body_constants import g, l_leg, l_torso, l_arm, head_radius, m, b, Kp, Kd, dt, total_time, num_steps
+
+def compute_torque(theta, omega, Kp, Kd):
+    """Compute PD controller torque."""
+    return -Kp * theta - Kd * omega
+
+def update_dynamics(theta, omega, torque, m, g, l_leg, b, dt):
+    """Update angular dynamics."""
+    domega_dt = (-m * g * l_leg * np.sin(theta) - b * omega + torque) / (m * l_leg**2)
+    omega_new = omega + domega_dt * dt
+    theta_new = theta + omega_new * dt
+    return theta_new, omega_new
 
 def simulate_balance():
     """
@@ -28,8 +40,6 @@ def simulate_balance():
         y_head_vals (list): Y-coordinates of the head
     """
 
-    from body_constants import g, l_leg, l_torso, l_arm, head_radius, m, b, Kp, Kd, dt, total_time, num_steps
-
     # Initial conditions
     theta = np.pi / 8  # Initial tilt
     omega = 0  # Initial angular velocity
@@ -46,10 +56,8 @@ def simulate_balance():
 
     # Simulate balance dynamics
     for t in time:
-        torque = -Kp * theta - Kd * omega # Compute PD controller torque based on angle (theta) and angular velocity (omega)
-        domega_dt = (-m * g * l_leg * np.sin(theta) - b * omega + torque) / (m * l_leg**2) # Calculate angular acceleration (domega_dt) using torque, gravity, and damping forces
-        omega += domega_dt * dt # Update angular velocity (omega) using angular acceleration and timestep (dt)
-        theta += omega * dt # Update angle (theta) using angular velocity and timestep (dt)
+        torque = compute_torque(theta, omega, Kp, Kd)
+        theta, omega = update_dynamics(theta, omega, torque, m, g, l_leg, b, dt)
         
         # Convert to Cartesian coordinates
         x_torso = l_leg * np.sin(theta)
