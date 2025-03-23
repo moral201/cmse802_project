@@ -10,7 +10,7 @@ Date: March 2025
 
 import sys
 import os
-sys.path.append(os.path.abspath("C:\\Users\\Admin\\Documents\\Michigan MSU\\Spring 2025\\CMSE 802\\Project\\cmse802_project\\src\\physics"))  # Add parent directory to path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src", "physics")))  # Add parent directory to path
 
 import unittest
 import numpy as np

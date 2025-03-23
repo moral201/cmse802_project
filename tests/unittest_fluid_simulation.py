@@ -12,7 +12,7 @@ import sys
 import os
 
 # Adjust the path to match your system:
-sys.path.append(os.path.abspath("C:\\Users\\Admin\\Documents\\Michigan MSU\\Spring 2025\\CMSE 802\\Project\\cmse802_project\\src\\fluids"))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src", "fluids")))
 
 import unittest
 import numpy as np
