@@ -5,7 +5,7 @@ Module: fluid_simulation.py
 A basic 2D particle-based fluid simulation using gravity and simple bounce collisions
 with the ground. This serves as a first step toward Smoothed Particle Hydrodynamics (SPH).
 
-Author: Your Name
+Author: Gerardo Morales
 Date: March 2025
 """
 

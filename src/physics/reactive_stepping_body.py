@@ -1,10 +1,11 @@
+# reactive_stepping_body.py
 """
-reactive_stepping_body.py
+Module: reactive_stepping_body.py
 
 Simulates a two-legged stick figure with knee joints. The figure maintains balance while standing
 and takes a reactive step if pushed beyond a stability threshold.
 
-Author: Your Name
+Author: Gerardo
 Date: March 2025
 """
 
@@ -22,19 +23,8 @@ def simulate_reactive_stepping_body():
         com_positions (list): X positions of center of mass over time
         step_events (list): Frame index when a step occurs
     """
+    from body_constants import g, l_leg, l_torso, l_arm, head_radius, m, b, Kp, Kd, dt, total_time, num_steps, step_threshold
 
-    # Constants
-    g = 9.81
-    l_leg = 1.0
-    l_torso = 1.2
-    m = 1.0
-    Kp = 100
-    Kd = 10
-    step_threshold = 0.4  # If COM moves this far from foot center, trigger a step
-
-    dt = 0.02
-    total_time = 5
-    num_steps = int(total_time / dt)
     time = np.linspace(0, total_time, num_steps)
 
     # Initial conditions
@@ -56,9 +46,9 @@ def simulate_reactive_stepping_body():
     foot_positions = []
 
     for i, t in enumerate(time):
-        # Apply PID-based torque control
-        torque = -Kp * theta - Kd * omega
-        domega_dt = (torque - 0.2 * omega) / (m * l_leg**2)
+        # Apply PD-based torque control
+        torque = -Kp * theta - Kd * omega # Calculate PD control torque to stabilize body angle (theta) using proportional and derivative terms
+        domega_dt = (torque - 0.2 * omega) / (m * l_leg**2) # Compute angular acceleration (domega_dt) considering torque and damping (0.2*omega)
         omega += domega_dt * dt
         theta += omega * dt
 
@@ -76,7 +66,7 @@ def simulate_reactive_stepping_body():
             support_foot = "left"
             step_events.append(i)
 
-        # ✅ Apply correction + damping only after stepping
+        # Apply correction + damping only after stepping
         if support_foot == "left":
             correction_strength = 1
             v_com -= correction_strength * (x_com - foot_center)

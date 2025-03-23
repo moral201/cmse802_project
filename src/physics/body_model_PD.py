@@ -1,9 +1,21 @@
+# body_model_PD.py
+"""
+Module: body_model_PD.py
+
+This module implements a physics-based 2D human body model using an inverted pendulum approach 
+to simulate biomechanical stability under gravitational forces. The model applies a PD controller 
+to adjust balance.
+
+Author: Gerardo Morales
+Date: March 2025
+"""
+
 import numpy as np
 
 def simulate_balance():
     """
     Simulates a two-legged human-like figure maintaining balance
-    under gravitational forces using a PID-controlled inverted pendulum.
+    under gravitational forces using a PD-controlled inverted pendulum (the torso).
     
     Returns:
         time (numpy array): Time steps
@@ -15,21 +27,8 @@ def simulate_balance():
         x_head_vals (list): X-coordinates of the head
         y_head_vals (list): Y-coordinates of the head
     """
-    
-    # Constants
-    g = 9.81  # Gravity (m/s^2)
-    l_leg = 1.0  # Leg length (m)
-    l_torso = 1.2  # Torso length (m)
-    l_arm = 1.0  # Arm length (m)
-    head_radius = 0.3  # Head size (m)
 
-    m = 1.0  # Mass of the torso (kg)
-    b = 0.5  # Damping coefficient (joint friction)
-    Kp = 50  # Proportional gain (PID)
-    Kd = 5  # Derivative gain (PID)
-    dt = 0.02  # Time step
-    total_time = 5  # Total simulation time (s)
-    num_steps = int(total_time / dt)
+    from body_constants import g, l_leg, l_torso, l_arm, head_radius, m, b, Kp, Kd, dt, total_time, num_steps
 
     # Initial conditions
     theta = np.pi / 8  # Initial tilt
@@ -47,24 +46,24 @@ def simulate_balance():
 
     # Simulate balance dynamics
     for t in time:
-        torque = -Kp * theta - Kd * omega
-        domega_dt = (-m * g * l_leg * np.sin(theta) - b * omega + torque) / (m * l_leg**2)
-        omega += domega_dt * dt
-        theta += omega * dt
+        torque = -Kp * theta - Kd * omega # Compute PD controller torque based on angle (theta) and angular velocity (omega)
+        domega_dt = (-m * g * l_leg * np.sin(theta) - b * omega + torque) / (m * l_leg**2) # Calculate angular acceleration (domega_dt) using torque, gravity, and damping forces
+        omega += domega_dt * dt # Update angular velocity (omega) using angular acceleration and timestep (dt)
+        theta += omega * dt # Update angle (theta) using angular velocity and timestep (dt)
         
         # Convert to Cartesian coordinates
         x_torso = l_leg * np.sin(theta)
         y_torso = l_leg * np.cos(theta) + l_leg  # Torso position
 
-        # Shoulder position (top of torso)
+        # Shoulder position 
         x_shoulder = x_torso
-        y_shoulder = y_torso - 0.2 #+ (l_torso / 2)
+        y_shoulder = y_torso - 0.2 
 
-        # Arms (from shoulders outward)
+        # Arms Position
         x_arm = [x_shoulder - l_arm / 2, x_shoulder + l_arm / 2]
         y_arm = [y_shoulder , y_shoulder ]
 
-        # Head (above shoulders)
+        # Head Position
         x_head = x_shoulder
         y_head = y_shoulder + head_radius + 0.2
 
