@@ -72,8 +72,15 @@ def simulate_reactive_stepping_body():
 
         if support_foot == "left":
             correction_strength = 1
-            v_com -= correction_strength * (x_com - foot_center)
-            v_com *= 0.98
+            dead_zone = 0.05  # Small tolerance for standing still
+
+            # Only correct if COM is outside dead zone
+            if abs(x_com - foot_center) > dead_zone:
+                v_com -= correction_strength * (x_com - foot_center)
+
+            # Apply damping to settle
+            v_com *= 0.95
+
 
         x_com += v_com * dt
 
