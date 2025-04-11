@@ -21,8 +21,8 @@ m = 1.0  # mass of the torso (kg)
 b = 0.5  # damping coefficient
 
 # Control parameters (default PD)
-Kp = 100
-Kd = 10
+Kp = 100 #100
+Kd = 10 #10
 
 # Time-related parameters
 dt = 0.02
@@ -30,7 +30,7 @@ total_time = 5  #seconds
 num_steps = int(total_time / dt)
 
 # Reactive step threshold
-step_threshold = 0.4 # If center of mass moves this far from foot center, trigger a step
+step_threshold = 0.4 # (meters) If center of mass moves this far from foot center, trigger a step
 
 # Time vector (used in some models)
 time = np.linspace(0, total_time, num_steps)

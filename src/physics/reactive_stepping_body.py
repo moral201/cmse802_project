@@ -39,7 +39,7 @@ def simulate_reactive_stepping_body():
     time = np.linspace(0, total_time, num_steps)
 
     # Initial conditions
-    theta = np.pi / 10
+    theta = np.pi / 3 #10
     omega = 0
     x_com = 0.0
     v_com = 0.0
@@ -57,7 +57,12 @@ def simulate_reactive_stepping_body():
     foot_positions = []
 
     for i, t in enumerate(time):
-        torque = compute_torque(theta, omega, Kp, Kd)
+        #torque = compute_torque(theta, omega, Kp, Kd)
+        gravity_torque = m * g * l_leg * np.sin(theta)
+        control_torque = compute_torque(theta, omega, Kp, Kd)
+        torque = gravity_torque + control_torque
+        #torque = compute_torque(theta, omega, Kp, Kd)
+
         theta, omega = update_stepping_dynamics(theta, omega, torque, m, l_leg, dt)
 
         # External push
