@@ -90,6 +90,9 @@ def simulate_reactive_stepping_body():
         shoulder_x = x_com * (1 - shoulder_ratio) + x_torso * shoulder_ratio
         shoulder_y = (l_leg) * (1 - shoulder_ratio) + y_torso * shoulder_ratio  # hip y is always l_leg
 
+        # Waving animation for right arm shoulder
+        target_theta2_R = np.pi/6  + 0.3 * np.sin(2 * np.pi * 1.5 * t)
+
         # Arm control - Left
         torque1_L = compute_torque(theta1_L - target_theta1_L, omega1_L, 20, 3)
         torque2_L = compute_torque(theta2_L - target_theta2_L, omega2_L, 15, 2)
