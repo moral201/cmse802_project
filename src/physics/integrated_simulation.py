@@ -11,7 +11,7 @@ def update_stepping_dynamics(theta, omega, torque, m, l, dt):
     return theta_new, omega_new
 
 # FLUID: Initialize particle positions
-def initialize_particles(num_particles, x_range=(-0.5, 0.5), y_range=(1.5, 2.0), seed=42):
+def initialize_particles(num_particles, x_range=(-2, 2), y_range=(2.5, 3.0), seed=42):
     np.random.seed(seed)
     x_positions = np.random.uniform(*x_range, num_particles)
     y_positions = np.random.uniform(*y_range, num_particles)
@@ -28,7 +28,7 @@ def update_fluid_dynamics(y_positions, y_velocities, g, elasticity, dt):
     return y_positions, y_velocities
 
 
-def simulate_reactive_stepping_body(num_particles=100, elasticity=0.2):
+def simulate_reactive_stepping_body(num_particles=200, elasticity=0.2):
     time = np.linspace(0, total_time, num_steps)
 
     # Body initial conditions
