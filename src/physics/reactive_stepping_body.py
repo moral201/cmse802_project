@@ -37,12 +37,17 @@ def simulate_reactive_stepping_body():
     # Arm parameters
     l_upper = 0.4
     l_forearm = 0.4
-    target_theta1 = np.pi / 3  # Shoulder
-    target_theta2 = -np.pi / 2  # Elbow
     shoulder_offset = 0.2  # Vertical offset from torso top
 
+    # Target angles for arms
+    target_theta1_L = 4*np.pi/3    # Left shoulder bends left
+    target_theta2_L = 0    # Left elbow bends
+
+    target_theta1_R = 0    # Right shoulder bends right
+    target_theta2_R = np.pi/6     # Right elbow bends
+
     # Arm states
-    theta1_L, omega1_L = 0.0, 0.0
+    theta1_L, omega1_L = np.pi, 0.0
     theta2_L, omega2_L = 0.0, 0.0
     theta1_R, omega1_R = 0.0, 0.0
     theta2_R, omega2_R = 0.0, 0.0
@@ -86,15 +91,15 @@ def simulate_reactive_stepping_body():
         shoulder_y = (l_leg) * (1 - shoulder_ratio) + y_torso * shoulder_ratio  # hip y is always l_leg
 
         # Arm control - Left
-        torque1_L = compute_torque(theta1_L - target_theta1, omega1_L, 20, 3)
-        torque2_L = compute_torque(theta2_L - target_theta2, omega2_L, 15, 2)
+        torque1_L = compute_torque(theta1_L - target_theta1_L, omega1_L, 20, 3)
+        torque2_L = compute_torque(theta2_L - target_theta2_L, omega2_L, 15, 2)
 
         theta1_L, omega1_L = update_stepping_dynamics(theta1_L, omega1_L, torque1_L, m, l_upper, dt)
         theta2_L, omega2_L = update_stepping_dynamics(theta2_L, omega2_L, torque2_L, m, l_forearm, dt)
 
         # Arm control - Right
-        torque1_R = compute_torque(theta1_R - target_theta1, omega1_R, 20, 3)
-        torque2_R = compute_torque(theta2_R - target_theta2, omega2_R, 15, 2)
+        torque1_R = compute_torque(theta1_R - target_theta1_R, omega1_R, 20, 3)
+        torque2_R = compute_torque(theta2_R - target_theta2_R, omega2_R, 15, 2)
 
         theta1_R, omega1_R = update_stepping_dynamics(theta1_R, omega1_R, torque1_R, m, l_upper, dt)
         theta2_R, omega2_R = update_stepping_dynamics(theta2_R, omega2_R, torque2_R, m, l_forearm, dt)
