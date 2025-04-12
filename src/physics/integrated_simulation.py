@@ -1,8 +1,10 @@
 import numpy as np
 from body_constants import g, l_leg, l_torso, l_arm, head_radius, m, b, Kp, Kd, dt, total_time, num_steps, step_threshold
 
+
 def compute_torque(theta, omega, Kp, Kd):
     return -Kp * theta - Kd * omega
+
 
 def update_stepping_dynamics(theta, omega, torque, m, l, dt):
     domega_dt = (torque - 0.2 * omega) / (m * l**2)
@@ -10,7 +12,7 @@ def update_stepping_dynamics(theta, omega, torque, m, l, dt):
     theta_new = theta + omega_new * dt
     return theta_new, omega_new
 
-# FLUID: Initialize particle positions
+
 def initialize_particles(num_particles, x_range=(-2, 2), y_range=(2.5, 3.0), seed=42):
     np.random.seed(seed)
     x_positions = np.random.uniform(*x_range, num_particles)
@@ -18,25 +20,42 @@ def initialize_particles(num_particles, x_range=(-2, 2), y_range=(2.5, 3.0), see
     y_velocities = np.zeros(num_particles)
     return x_positions, y_positions, y_velocities
 
-# FLUID: Update fluid positions with gravity and bounce
-def update_fluid_dynamics(y_positions, y_velocities, g, elasticity, dt):
+
+def update_fluid_dynamics(x_particles, y_particles, y_velocities, x_head, y_head, g, elasticity, dt):
+    # Gravity effect
     y_velocities -= g * dt
-    y_positions += y_velocities * dt
-    collisions = y_positions <= 0
-    y_positions[collisions] = 0
-    y_velocities[collisions] *= -elasticity
-    return y_positions, y_velocities
+    y_particles += y_velocities * dt
+
+    # Ground collision
+    ground_collision = y_particles <= 0
+    y_particles[ground_collision] = 0
+    y_velocities[ground_collision] *= -elasticity
+
+    # Head collision detection
+    dx = x_particles - x_head
+    dy = y_particles - y_head
+    dist = np.sqrt(dx**2 + dy**2)
+
+    head_collision = dist < head_radius
+
+    # Correct particle position (push to edge of head)
+    x_particles[head_collision] = x_head + dx[head_collision] * head_radius / dist[head_collision]
+    y_particles[head_collision] = y_head + dy[head_collision] * head_radius / dist[head_collision]
+
+    # Reflect y-velocity for bouncing effect
+    y_velocities[head_collision] *= -elasticity
+
+    return y_particles, y_velocities
 
 
 def simulate_reactive_stepping_body(num_particles=200, elasticity=0.2):
     time = np.linspace(0, total_time, num_steps)
 
-    # Body initial conditions
+    # Initial conditions
     theta, omega, x_com, v_com = np.pi / 3, 0, 0.0, 0.0
     left_foot_x, right_foot_x = -0.3, 0.3
     support_foot, step_events = "both", []
 
-    # Arm parameters
     l_upper, l_forearm = 0.4, 0.4
     shoulder_offset = 0.2
 
@@ -49,12 +68,11 @@ def simulate_reactive_stepping_body(num_particles=200, elasticity=0.2):
     torso_x, torso_y, com_positions, foot_positions = [], [], [], []
     left_arm_joints, right_arm_joints = [], []
 
-    # FLUID: Initialize particles
+    # Fluid particles
     x_particles, y_particles, y_velocities = initialize_particles(num_particles)
     y_trajectory = []
 
     for i, t in enumerate(time):
-        # Body control
         gravity_torque = m * g * l_leg * np.sin(theta)
         control_torque = compute_torque(theta, omega, Kp, Kd)
         theta, omega = update_stepping_dynamics(theta, omega, gravity_torque + control_torque, m, l_leg, dt)
@@ -77,7 +95,6 @@ def simulate_reactive_stepping_body(num_particles=200, elasticity=0.2):
         x_torso = x_com + l_leg * np.sin(theta)
         y_torso = l_leg * np.cos(theta) + l_leg
 
-        # Shoulder location
         total_body_length = l_leg + l_torso
         shoulder_ratio = (total_body_length - shoulder_offset) / total_body_length
         shoulder_x = x_com * (1 - shoulder_ratio) + x_torso * shoulder_ratio
@@ -96,7 +113,6 @@ def simulate_reactive_stepping_body(num_particles=200, elasticity=0.2):
         theta1_R, omega1_R = update_stepping_dynamics(theta1_R, omega1_R, torque1_R, m, l_upper, dt)
         theta2_R, omega2_R = update_stepping_dynamics(theta2_R, omega2_R, torque2_R, m, l_forearm, dt)
 
-        # Arm positions
         elbow_x_L = shoulder_x + l_upper * np.cos(theta1_L)
         elbow_y_L = shoulder_y + l_upper * np.sin(theta1_L)
         hand_x_L = elbow_x_L + l_forearm * np.cos(theta1_L + theta2_L)
@@ -107,6 +123,7 @@ def simulate_reactive_stepping_body(num_particles=200, elasticity=0.2):
         hand_x_R = elbow_x_R + l_forearm * np.cos(theta1_R + theta2_R)
         hand_y_R = elbow_y_R + l_forearm * np.sin(theta1_R + theta2_R)
 
+        # Store body data
         torso_x.append(x_torso)
         torso_y.append(y_torso)
         com_positions.append(x_com)
@@ -114,10 +131,15 @@ def simulate_reactive_stepping_body(num_particles=200, elasticity=0.2):
         left_arm_joints.append([(shoulder_x, shoulder_y), (elbow_x_L, elbow_y_L), (hand_x_L, hand_y_L)])
         right_arm_joints.append([(shoulder_x, shoulder_y), (elbow_x_R, elbow_y_R), (hand_x_R, hand_y_R)])
 
-        # FLUID update
-        y_particles, y_velocities = update_fluid_dynamics(y_particles, y_velocities, g, elasticity, dt)
+        # Compute head position for collision
+        x_head = shoulder_x
+        y_head = shoulder_y + head_radius + 0.2  # 0.2 offset above shoulder
+
+        # Update fluid particles
+        y_particles, y_velocities = update_fluid_dynamics(x_particles, y_particles, y_velocities,
+                                                          x_head, y_head, g, elasticity, dt)
         y_trajectory.append(y_particles.copy())
 
-    print("Running integrated_simulation.py with BODY + FLUIDS")
+    print("Running integrated_simulation.py with BODY + FLUID + COLLISION")
 
     return time, torso_x, torso_y, foot_positions, com_positions, step_events, left_arm_joints, right_arm_joints, x_particles, y_trajectory
