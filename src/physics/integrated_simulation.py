@@ -15,14 +15,15 @@ def initialize_particles(num_particles, x_range=(-2, 2), y_range=(2.5, 3.0), see
     x_positions = np.random.uniform(*x_range, num_particles)
     y_positions = np.random.uniform(*y_range, num_particles)
     y_velocities = np.zeros(num_particles)
-    return x_positions, y_positions, y_velocities
+    x_velocities = np.zeros(num_particles)
+    return x_positions, y_positions, x_velocities, y_velocities
 
 def reflect_particles_from_segment(xp, yp, xv, yv, x1, y1, x2, y2, thickness, elasticity):
     dx = x2 - x1
     dy = y2 - y1
     length = np.sqrt(dx**2 + dy**2)
     if length == 0:
-        return yv
+        return xv, yv
     nx = -dy / length
     ny = dx / length
     dist = np.abs((xp - x1) * nx + (yp - y1) * ny)
@@ -34,34 +35,37 @@ def reflect_particles_from_segment(xp, yp, xv, yv, x1, y1, x2, y2, thickness, el
     close_enough = (np.abs(xp - x_closest) < 0.5) & (np.abs(yp - y_closest) < 0.5)
     active = colliding & close_enough
     if active.any():
-        yv[active] *= -elasticity
-    return yv
+        v_dot_n = xv[active] * nx + yv[active] * ny
+        xv[active] -= (1 + elasticity) * v_dot_n * nx
+        yv[active] -= (1 + elasticity) * v_dot_n * ny
+    return xv, yv
 
-# Respawning rain particles
-def update_fluid_dynamics(xp, yp, yv, segments, x_head, y_head, g, elasticity, dt, x_range=(-2, 2), y_reset=3.0):
+def update_fluid_dynamics(xp, yp, xv, yv, segments, x_head, y_head, g, elasticity, dt, x_range=(-2, 2), y_reset=3.0):
     yv -= g * dt
+    xp += xv * dt
     yp += yv * dt
 
-    # Respawn particles that hit the ground
     ground_collision = yp <= 0
     yp[ground_collision] = y_reset
     xp[ground_collision] = np.random.uniform(*x_range, ground_collision.sum())
     yv[ground_collision] = 0
+    xv[ground_collision] = 0
 
-    # Head collision (circular)
     dx = xp - x_head
     dy = yp - y_head
     dist = np.sqrt(dx**2 + dy**2)
     head_collision = dist < head_radius
     xp[head_collision] = x_head + dx[head_collision] * head_radius / dist[head_collision]
     yp[head_collision] = y_head + dy[head_collision] * head_radius / dist[head_collision]
-    yv[head_collision] *= -elasticity
+    v_dot_n = xv[head_collision] * dx[head_collision] / dist[head_collision] + yv[head_collision] * dy[head_collision] / dist[head_collision]
+    xv[head_collision] -= (1 + elasticity) * v_dot_n * dx[head_collision] / dist[head_collision]
+    yv[head_collision] -= (1 + elasticity) * v_dot_n * dy[head_collision] / dist[head_collision]
 
-    # Segment collision
     for (x1, y1, x2, y2) in segments:
-        yv = reflect_particles_from_segment(xp, yp, xp, yv, x1, y1, x2, y2, thickness=0.05, elasticity=elasticity)
+        xv, yv = reflect_particles_from_segment(xp, yp, xv, yv, x1, y1, x2, y2, thickness=0.1, elasticity=elasticity)
 
-    return yp, yv
+    return yp, xv, yv
+
 
 def simulate_reactive_stepping_body(num_particles=200, elasticity=0.2):
     time = np.linspace(0, total_time, num_steps)
@@ -82,8 +86,10 @@ def simulate_reactive_stepping_body(num_particles=200, elasticity=0.2):
     torso_x, torso_y, com_positions, foot_positions = [], [], [], []
     left_arm_joints, right_arm_joints = [], []
 
-    x_particles, y_particles, y_velocities = initialize_particles(num_particles)
+    x_particles, y_particles, x_velocities, y_velocities = initialize_particles(num_particles)
+
     y_trajectory = []
+    x_trajectory = []
 
     for i, t in enumerate(time):
         gravity_torque = m * g * l_leg * np.sin(theta)
@@ -155,11 +161,14 @@ def simulate_reactive_stepping_body(num_particles=200, elasticity=0.2):
         x_head = shoulder_x
         y_head = shoulder_y + head_radius + 0.2
 
-        y_particles, y_velocities = update_fluid_dynamics(x_particles, y_particles, y_velocities,
-                                                          segments, x_head, y_head, g, elasticity, dt)
+        y_particles, x_velocities, y_velocities = update_fluid_dynamics(
+            x_particles, y_particles, x_velocities, y_velocities, segments, x_head, y_head, g, elasticity, dt
+        )
 
         y_trajectory.append(y_particles.copy())
+        x_trajectory.append(x_particles.copy())
 
-    print("Running integrated_simulation.py with BODY + FLUID + CONSTANT RAIN")
+    print("Running integrated_simulation.py with BODY + FLUID + HORIZONTAL FLUID COLLISION")
 
-    return time, torso_x, torso_y, foot_positions, com_positions, step_events, left_arm_joints, right_arm_joints, x_particles, y_trajectory
+    return time, torso_x, torso_y, foot_positions, com_positions, step_events, left_arm_joints, right_arm_joints, x_trajectory, y_trajectory
+
