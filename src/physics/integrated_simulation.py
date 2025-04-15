@@ -64,9 +64,14 @@ def update_fluid_dynamics(xp, yp, xv, yv, segments, x_head, y_head,
     yv[head_collision] -= (1 + elasticity) * v_dot_n * dy[head_collision] / dist[head_collision]
 
     for (x1, y1, x2, y2) in segments:
-        if (x1 == shoulder_x and y1 == shoulder_y and x2 == elbow_x_L and y2 == elbow_y_L):
+        eps = 1e-6
+        if (
+            abs(x1 - shoulder_x) < eps and abs(y1 - shoulder_y) < eps and
+            abs(x2 - elbow_x_L) < eps and abs(y2 - elbow_y_L) < eps
+        ):
             continue
-        xv, yv = reflect_particles_from_segment(xp, yp, xv, yv, x1, y1, x2, y2, thickness=0.1, elasticity=elasticity)
+
+        xv, yv = reflect_particles_from_segment(xp, yp, xv, yv, x1, y1, x2, y2, thickness=0.07, elasticity=elasticity)
 
     return yp, xv, yv
 
@@ -155,7 +160,7 @@ def simulate_reactive_stepping_body(num_particles=200, elasticity=0.2):
             (x_com, l_leg, x_torso, y_torso),
             (shoulder_x, shoulder_y, elbow_x_L, elbow_y_L),
             (elbow_x_L, elbow_y_L, hand_x_L, hand_y_L),
-            (shoulder_x, shoulder_y, elbow_x_R, elbow_y_R),
+            (shoulder_x+0.25, shoulder_y, elbow_x_R, elbow_y_R), #giving problem 
             (elbow_x_R, elbow_y_R, hand_x_R, hand_y_R),
             (left_foot_x, 0, x_com, l_leg),
             (right_foot_x, 0, x_com, l_leg),
