@@ -1,6 +1,6 @@
-# body_constants.py
+# global_constants.py
 """
-Module: body_constants.py
+Module: global_constants.py
 
 This module defines all global physical, control, simulation, and fluid parameters used in the simulations.
 Constants are grouped into logical categories to facilitate readability and reusability.
