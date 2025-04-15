@@ -64,13 +64,6 @@ def update_fluid_dynamics(xp, yp, xv, yv, segments, x_head, y_head,
     yv[head_collision] -= (1 + elasticity) * v_dot_n * dy[head_collision] / dist[head_collision]
 
     for (x1, y1, x2, y2) in segments:
-        eps = 1e-6
-        if (
-            abs(x1 - shoulder_x) < eps and abs(y1 - shoulder_y) < eps and
-            abs(x2 - elbow_x_L) < eps and abs(y2 - elbow_y_L) < eps
-        ):
-            continue
-
         xv, yv = reflect_particles_from_segment(xp, yp, xv, yv, x1, y1, x2, y2, thickness=0.07, elasticity=elasticity)
 
     return yp, xv, yv
