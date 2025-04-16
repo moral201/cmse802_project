@@ -1,5 +1,14 @@
-# notebooks
+# Notebooks (`notebooks/`)
 
-This directory contains Jupyter notebooks used for visualization, analysis, and documentation of simulation results.
+This folder contains Jupyter notebooks used to visualize and debug the simulation during development.
 
-Each notebook corresponds to a specific approach or module implemented in the `src` directory.
+## Files
+
+- `main_simulation_visualization.ipynb`  
+  Jupyter notebook used to run and animate the full-body simulation.  
+  It integrates the stepping controller, arm dynamics, and fluid-body interaction for visualization and testing.
+
+## Notes
+
+- This notebook is primarily used for generating visual output, not for modular code development.
+- All core logic is implemented in the `/src` folder; this notebook calls and visualizes those modules.

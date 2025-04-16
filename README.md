@@ -1,42 +1,43 @@
 # cmse802_project
 
-# Physics-Based Scene Simulation: Human-Like Body and Environmental Interactions  
+## Final Project – Reactive Stepping Body with Environmental Fluid Interaction
 
-## Project Overview  
-This project aims to create a physics-based dynamic scene where a human-like figure maintains balance while responding to external forces, such as environmental interactions with fluid dynamics like rain. By integrating rigid-body mechanics with Smoothed Particle Hydrodynamics (SPH), the simulation will model realistic movement, biomechanical constraints, and recovery from disturbances. The implementation will be conducted in Python using physics solvers and particle-based fluid simulations to enhance realism.
+This project simulates a 2D human-like body maintaining balance using a reactive stepping controller. The simulation also includes arm dynamics and interaction with environmental fluid particles (e.g., falling rain), demonstrating how the body reacts to continuous disturbances.
 
-## Objectives  
-- Develop a **multi-joint** physics-based body capable of maintaining balance.  
-- Implement **external force simulations** and analyze response behavior.  
-- Apply **fluid dynamics models** to simulate realistic environmental interactions.  
-- Transition from **2D to 3D simulations**, increasing complexity gradually.  
+## Project Goals
 
-## Project Structure  
-This repository is organized as follows:  
+- Model a physics-based, multi-joint body that actively balances under gravity.
+- Implement arm control using joint torques to maintain posture.
+- Simulate external fluid particles interacting with body segments.
+- Visualize motion and particle-body collisions over time.
 
-- **`src/`** - Contains all source code for physics and fluid simulations.  
-- **`notebooks/`** - Jupyter notebooks for testing simulations.  
-- **`data/`** - Directory for sample datasets (if required).  
-- **`docs/`** - Documentation and project reports.  
-- **`results/`** - Stores simulation results and generated images.  
-- **`tests/`** - Unit test scripts for verifying correctness of models.  
-- **`.gitignore`** - Specifies files to exclude from version control.  
-- **`README.md`** - This file, providing an overview of the project.  
-- **`requirements.txt`** - Lists dependencies required for the project.   
+## Project Structure
 
-##  Setting Up  
-### ** Clone the Repository**
+This repository is organized as follows:
+
+- **`src/`** – Contains all source code for physics and fluid simulations.  
+- **`notebooks/`** – Jupyter notebooks for testing and visualizing simulations.  
+- **`results/`** – Stores simulation results (generated videos).  
+- **`tests/`** – Unit test scripts for verifying correctness of models.  
+- **`.gitignore`** – Specifies files to exclude from version control.  
+- **`README.md`** – This file, providing an overview of the project.  
+- **`requirements.txt`** – Lists dependencies required for the project.
+
+## Setting Up
+
+### Clone the Repository
 ```sh
 git clone https://github.com/your-username/cmse802_project.git
 cd cmse802_project
 pip install -r requirements.txt
-python src/main.py
+
+## How to Run Simulation
+cd notebooks
+jupyter notebook main_simulation_visualization.ipynb
 
 ## Dependencies
 Python 3.x
 NumPy - Numerical computations
 Matplotlib - Visualization
-PyBullet - Physics engine for rigid-body simulation
-PySPH - Particle-based fluid simulation
 
 

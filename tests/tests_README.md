@@ -1,5 +1,16 @@
-# tests
+# Unit Tests (`tests/`)
 
-This directory contains unit tests for validating each module in the `src` directory.
+This folder contains unit tests for key functions in the simulation project.
 
-Tests are implemented using Python’s built-in `unittest` framework.
+## Files
+
+- `unittest_physics_utils.py`  
+  Contains unit tests for functions in `physics_utils.py`, including:
+  - Torque computation
+  - Segment dynamics update
+  - Particle reflection from body segments
+
+## Notes
+
+- These tests help verify the correctness of physics-related logic in the simulation.
+- The tests can be run independently using any Python test runner (e.g., `pytest`, `unittest` CLI).
